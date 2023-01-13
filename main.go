@@ -19,14 +19,10 @@ func main() {
 	}
 	defer db.Close()
 
-	if err = db.LoadJourneyData(); err != nil {
+	if err = db.LoadData(); err != nil {
 		log.Fatal(err)
 	}
 	
-	if err = db.LoadStationData(); err != nil {
-		log.Fatal(err)
-	}
-
 	http.HandleFunc("/", indexHandler)
 	http.ListenAndServe(":8000", nil)
 

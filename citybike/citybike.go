@@ -30,8 +30,7 @@ var (
 	Distance,
 	Duration)
 	VALUES (?, ?, ?, ?)`
-	inserttoStationTable string = 
-	`INSERT INTO StationList (
+	inserttoStationTable string = `INSERT INTO StationList (
 	id,
 	FI_Name,
 	SE_Name,
@@ -106,20 +105,10 @@ func (citybike *Citybike) downloadJourney() ([]Journey, error) {
 			return nil, err
 		}
 	}
-
-	/*file := "/Users/bengisu/Downloads/Helsingin_ja_Espoon_kaupunkipyöräasemat_avoin.csv"
-	stationTab := []Station{}
-	err := csvtag.LoadFromPath(file, &stationTab, csvtag.CsvOptions{})
-	if err != nil {
-		return nil, nil, err
-	}*/
-
 	return journeyTab, nil
 }
 
-
-
-func (citybike *Citybike) LoadJourneyData() error {
+func (citybike *Citybike) loadJourneyData() error {
 	if err := citybike.exec(createJourneyTable); err != nil {
 		return err
 	}
@@ -157,7 +146,7 @@ func (citybike *Citybike) downloadStation() ([]Station, error) {
 	return stationTab, nil
 }
 
-func (citybike *Citybike) LoadStationData() error {
+func (citybike *Citybike) loadStationData() error {
 	if err := citybike.exec(createStationTable); err != nil {
 		return err
 	}
@@ -179,5 +168,18 @@ func (citybike *Citybike) LoadStationData() error {
 			return err
 		}
 	}
+
+	return nil
+}
+
+func (citybike *Citybike) LoadData() error {
+	if err := citybike.loadJourneyData(); err != nil {
+		return err
+	}
+
+	if err := citybike.loadStationData(); err != nil {
+		return err
+	}
+
 	return nil
 }
