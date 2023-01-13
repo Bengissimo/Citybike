@@ -1,10 +1,13 @@
 package main
 
 import (
-	"github.com/Bengissimo/Citybike/citybike"
+	"flag"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+
+	"github.com/Bengissimo/Citybike/citybike"
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -13,16 +16,23 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	downloadData := flag.Bool("download", false, "download data")
+	flag.Parse()
+
 	db, err := citybike.New("citybike.db")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	if err = db.LoadData(); err != nil {
-		log.Fatal(err)
+	if *downloadData {
+		if err = db.LoadData(); err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("Download completed successfully")
+		return
 	}
-	
+
 	http.HandleFunc("/", indexHandler)
 	http.ListenAndServe(":8000", nil)
 

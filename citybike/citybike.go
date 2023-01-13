@@ -68,7 +68,7 @@ type Station struct {
 	SE_Address string `csv:"Adress"`
 }
 
-// New opens a database using sql.Open assigns this database to the returned Citybike struct
+// New returns a Citbike struct containig a sqlite database
 func New(path string) (*Citybike, error) {
 	sqldb, err := sql.Open("sqlite3", path)
 	if err != nil {
@@ -85,18 +85,17 @@ func (citybike *Citybike) Close() {
 	citybike.db.Close()
 }
 
-// exec executes the create table query given as string argument
 func (citybike *Citybike) exec(createTable string) error {
 	_, err := citybike.db.Exec(createTable)
 	return err
 }
 
-// Download downloads the csv data using csvtag package
+// downloadJourney loads csv data and returns a Journey slice 
 func (citybike *Citybike) downloadJourney() ([]Journey, error) {
 	files := []string{
 		"/Users/bengisu/Downloads/2021-05.csv",
-		//"/Users/bengisu/Downloads/2021-06.csv",
-		//"/Users/bengisu/Downloads/2021-07.csv",
+		"/Users/bengisu/Downloads/2021-06.csv",
+		"/Users/bengisu/Downloads/2021-07.csv",
 	}
 	journeyTab := []Journey{} // the slice to put the content into
 	for _, filename := range files {
@@ -108,7 +107,13 @@ func (citybike *Citybike) downloadJourney() ([]Journey, error) {
 	return journeyTab, nil
 }
 
+// loadJourneyData creates Journey table in the database and inserts data
 func (citybike *Citybike) loadJourneyData() error {
+	tx, err := citybike.db.Begin()
+	if err != nil {
+		return err
+	}
+
 	if err := citybike.exec(createJourneyTable); err != nil {
 		return err
 	}
@@ -118,7 +123,7 @@ func (citybike *Citybike) loadJourneyData() error {
 		return err
 	}
 
-	stmt, err := citybike.db.Prepare(inserttoJourneyTable)
+	stmt, err := tx.Prepare(inserttoJourneyTable)
 	if err != nil {
 		return err
 	}
@@ -130,9 +135,10 @@ func (citybike *Citybike) loadJourneyData() error {
 			return err
 		}
 	}
-	return nil
+	return tx.Commit()
 }
 
+// downloadStation loads csv data and returns a Staion slice
 func (citybike *Citybike) downloadStation() ([]Station, error) {
 
 	file := "/Users/bengisu/Downloads/Helsingin_ja_Espoon_kaupunkipyöräasemat_avoin.csv"
@@ -146,7 +152,13 @@ func (citybike *Citybike) downloadStation() ([]Station, error) {
 	return stationTab, nil
 }
 
+// loadStationData creates Station table in the database and inserts data
 func (citybike *Citybike) loadStationData() error {
+	tx, err := citybike.db.Begin()
+	if err != nil {
+		return err
+	}
+
 	if err := citybike.exec(createStationTable); err != nil {
 		return err
 	}
@@ -156,7 +168,7 @@ func (citybike *Citybike) loadStationData() error {
 		return err
 	}
 
-	stmt, err := citybike.db.Prepare(inserttoStationTable)
+	stmt, err := tx.Prepare(inserttoStationTable)
 	if err != nil {
 		return err
 	}
@@ -169,7 +181,7 @@ func (citybike *Citybike) loadStationData() error {
 		}
 	}
 
-	return nil
+	return tx.Commit()
 }
 
 func (citybike *Citybike) LoadData() error {
