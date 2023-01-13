@@ -30,6 +30,14 @@ var (
 	Distance,
 	Duration)
 	VALUES (?, ?, ?, ?)`
+	inserttoStationTable string = 
+	`INSERT INTO StationList (
+	id,
+	FI_Name,
+	SE_Name,
+	FI_Address,
+	SE_Address)
+	VALUES (?, ?, ?, ?, ?)`
 )
 
 // Citybike is a representation of sql.DB
@@ -52,14 +60,14 @@ type Journey struct {
 	Duration     float64 `csv:"Duration (sec.)"`
 }
 
-/*// Station struct with csvtags
+// Station struct with csvtags
 type Station struct {
 	ID         int    `csv:"ID"`
 	FI_Name    string `csv:"Nimi"`
 	SE_Name    string `csv:"Namn"`
 	FI_Address string `csv:"Osoite"`
 	SE_Address string `csv:"Adress"`
-}*/
+}
 
 // New opens a database using sql.Open assigns this database to the returned Citybike struct
 func New(path string) (*Citybike, error) {
@@ -109,6 +117,8 @@ func (citybike *Citybike) downloadJourney() ([]Journey, error) {
 	return journeyTab, nil
 }
 
+
+
 func (citybike *Citybike) LoadJourneyData() error {
 	if err := citybike.exec(createJourneyTable); err != nil {
 		return err
@@ -127,6 +137,44 @@ func (citybike *Citybike) LoadJourneyData() error {
 
 	for _, journey := range journeytab {
 		_, err := stmt.Exec(journey.DepartureID, journey.ReturnID, journey.Distance, journey.Duration)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (citybike *Citybike) downloadStation() ([]Station, error) {
+
+	file := "/Users/bengisu/Downloads/Helsingin_ja_Espoon_kaupunkipyöräasemat_avoin.csv"
+	stationTab := []Station{}
+
+	err := csvtag.LoadFromPath(file, &stationTab, csvtag.CsvOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return stationTab, nil
+}
+
+func (citybike *Citybike) LoadStationData() error {
+	if err := citybike.exec(createStationTable); err != nil {
+		return err
+	}
+
+	stationtab, err := citybike.downloadStation()
+	if err != nil {
+		return err
+	}
+
+	stmt, err := citybike.db.Prepare(inserttoStationTable)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	for _, station := range stationtab {
+		_, err := stmt.Exec(station.ID, station.FI_Name, station.SE_Name, station.FI_Address, station.SE_Address)
 		if err != nil {
 			return err
 		}

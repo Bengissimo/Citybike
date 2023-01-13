@@ -22,6 +22,10 @@ func main() {
 	if err = db.LoadJourneyData(); err != nil {
 		log.Fatal(err)
 	}
+	
+	if err = db.LoadStationData(); err != nil {
+		log.Fatal(err)
+	}
 
 	http.HandleFunc("/", indexHandler)
 	http.ListenAndServe(":8000", nil)
