@@ -4,6 +4,7 @@ package citybike
 
 import (
 	"database/sql"
+	"net/http"
 
 	csvtag "github.com/artonge/go-csv-tag/v2"
 	_ "github.com/mattn/go-sqlite3"
@@ -90,17 +91,22 @@ func (citybike *Citybike) exec(createTable string) error {
 	return err
 }
 
-// downloadJourney loads csv data and returns a Journey slice 
-func (citybike *Citybike) downloadJourney() ([]Journey, error) {
-	files := []string{
-		"/Users/bengisu/Downloads/2021-05.csv",
-		"/Users/bengisu/Downloads/2021-06.csv",
-		"/Users/bengisu/Downloads/2021-07.csv",
+// readJourneyCSV loads csv data and returns a Journey slice
+func (citybike *Citybike) readJourneyCSV() ([]Journey, error) {
+	journeyURLs := []string{
+		"https://dev.hsl.fi/citybikes/od-trips-2021/2021-05.csv",
+		"https://dev.hsl.fi/citybikes/od-trips-2021/2021-06.csv",
+		"https://dev.hsl.fi/citybikes/od-trips-2021/2021-07.csv",
 	}
-	journeyTab := []Journey{} // the slice to put the content into
-	for _, filename := range files {
-		err := csvtag.LoadFromPath(filename, &journeyTab, csvtag.CsvOptions{})
+	journeyTab := []Journey{}
+
+	for _, url := range journeyURLs {
+		resp, err := http.Get(url)
 		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+		if err = csvtag.LoadFromReader(resp.Body, &journeyTab); err != nil {
 			return nil, err
 		}
 	}
@@ -118,7 +124,7 @@ func (citybike *Citybike) loadJourneyData() error {
 		return err
 	}
 
-	journeytab, err := citybike.downloadJourney()
+	journeytab, err := citybike.readJourneyCSV()
 	if err != nil {
 		return err
 	}
@@ -138,14 +144,19 @@ func (citybike *Citybike) loadJourneyData() error {
 	return tx.Commit()
 }
 
-// downloadStation loads csv data and returns a Staion slice
-func (citybike *Citybike) downloadStation() ([]Station, error) {
+// readStationCSV loads csv data and returns a Staion slice
+func (citybike *Citybike) readStationCSV() ([]Station, error) {
 
-	file := "/Users/bengisu/Downloads/Helsingin_ja_Espoon_kaupunkipyöräasemat_avoin.csv"
+	stationURL := "https://opendata.arcgis.com/datasets/726277c507ef4914b0aec3cbcfcbfafc_0.csv"
 	stationTab := []Station{}
 
-	err := csvtag.LoadFromPath(file, &stationTab, csvtag.CsvOptions{})
+	resp, err := http.Get(stationURL)
 	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if err = csvtag.LoadFromReader(resp.Body, &stationTab); err != nil {
 		return nil, err
 	}
 
@@ -163,7 +174,7 @@ func (citybike *Citybike) loadStationData() error {
 		return err
 	}
 
-	stationtab, err := citybike.downloadStation()
+	stationtab, err := citybike.readStationCSV()
 	if err != nil {
 		return err
 	}
