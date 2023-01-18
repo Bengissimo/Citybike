@@ -3,17 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"html/template"
 	"log"
-	"net/http"
 
 	"github.com/Bengissimo/Citybike/citybike"
+	"github.com/Bengissimo/Citybike/server"
 )
-
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles("index.html")
-	t.Execute(w, nil)
-}
 
 func main() {
 	downloadData := flag.Bool("download", false, "download data")
@@ -33,7 +27,8 @@ func main() {
 		return
 	}
 
-	http.HandleFunc("/", indexHandler)
-	http.ListenAndServe(":8000", nil)
-
+	s := server.New(db)
+	if err := s.Run(); err != nil {
+		log.Fatal(err)
+	}
 }

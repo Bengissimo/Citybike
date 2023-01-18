@@ -1,0 +1,24 @@
+
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+			<th>Nimi</th>
+			<th>Namn</th>
+			<th>Osoite</th>
+			<th>Adress</th>
+        </tr>
+    </thead>
+    <tbody>
+		{{ range $key, $value := .Stations }}
+		 <tr>
+            <td><a href="{{ $value.ID}}" >{{ $value.ID }}</td>
+            <td>{{ $value.NameFI }}</td>
+			<td>{{ $value.NameSE }}</td>
+			<td>{{ $value.AddressFI }}</td>
+			<td>{{ $value.AddressSE }}</td>
+        </tr>
+		{{ end }}
+    </tbody>
+</table>

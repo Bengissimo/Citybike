@@ -1,0 +1,26 @@
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Departure Station ID</th>
+			<th>Departure Station</th>
+			<th>Return Station ID</th>
+			<th>Return Station</th>
+            <th>Distance</th>
+			<th>Duration</th>
+        </tr>
+    </thead>
+    <tbody>
+		{{ range $key, $value := .Journeys }}
+		 <tr>
+            <td><a href="{{ $value.DepartureID}}" >{{ $value.DepartureID }}</td>
+            <td>{{ $value.DepartureFI}} / {{$value.DepartureSE}}</td>
+			<td>{{ $value.ReturnID }}</td>
+			<td>{{ $value.ReturnFI }} / {{ $value.ReturnSE }}</td>
+			<td>{{ $value.Distance | FormatFloat }}</td>
+			<td>{{ $value.Duration | FormatFloat }}</td>
+        </tr>
+		{{ end }}
+    </tbody>
+</table>

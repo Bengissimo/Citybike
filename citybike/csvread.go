@@ -46,6 +46,7 @@ type Station struct {
 	AddressSE string `csv:"Adress"`
 }
 
+
 // readJourneyCSV reads csv files from specified URLs and returns a slice of Journey struct.
 // To load csv it uses csvtag package
 func readJourneyCSV() ([]Journey, error) {

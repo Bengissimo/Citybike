@@ -119,7 +119,7 @@ func (citybike *Citybike) loadStationData() error {
 	defer stmt.Close()
 
 	for _, station := range stationtab {
-		_, err := stmt.Exec(station.ID, station.NameFI, station.NameSE, station.AddressFI, station.AddressFI)
+		_, err := stmt.Exec(station.ID, station.NameFI, station.NameSE, station.AddressFI, station.AddressSE)
 		if err != nil {
 			return err
 		}
