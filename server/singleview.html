@@ -1,0 +1,18 @@
+<table style="width:100%">
+    <thead style="text-align:left" >
+        <tr>
+            <th> Name</th>
+			<th> Address</th>
+			<th> Number of Journeys Starting from</th>
+			<th> Number of Journeys Ending at </th>
+        </tr>
+    </thead>
+    <tbody>
+		 <tr>
+            <td>{{ .Station.NameFI }} / {{ .Station.NameSE }}</td>
+			<td>{{ .Station.AddressFI }} / {{ .Station.AddressSE }}</td>
+			<td>{{ .StartFrom }}</td>
+			<td>{{ .EndingAt }}</td>
+        </tr>
+    </tbody>
+</table>

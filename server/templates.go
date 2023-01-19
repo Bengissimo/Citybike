@@ -21,11 +21,17 @@ type journeyTemplate struct {
 	TotalPages  int
 }
 
+type singleStationTemplate struct {
+	Station citybike.Station
+	StartFrom int
+	EndingAt int
+}
+
 func applyTemplate(name string, w http.ResponseWriter, data any) error {
 	_, subname, _ := strings.Cut(name, "/")
 	funcs := template.FuncMap{
 		"FormatFloat": func(value float64) string {
-			return fmt.Sprintf("%.1f", value)
+			return fmt.Sprintf("%.2f", value)
 		},
 		"MinusOne": func(value int) int {
 			return value - 1

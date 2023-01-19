@@ -6,6 +6,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/Bengissimo/Citybike/citybike"
 )
@@ -22,6 +23,7 @@ func New(cb *citybike.Citybike) *Server {
 	http.HandleFunc("/", srv.indexHandler)
 	http.HandleFunc("/journeys", srv.journeyHandler)
 	http.HandleFunc("/stations", srv.stationHandler)
+	http.HandleFunc("/station/", srv.singleViewHandler)
 
 	return srv
 }
@@ -94,6 +96,34 @@ func (server *Server) journeyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = applyTemplate("server/journeys.html", w, jt)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func (server *Server) singleViewHandler(w http.ResponseWriter, r *http.Request) {
+	idStr := strings.Split(r.URL.Path, "/")[2]
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		id = 0
+	}
+	theStation, err := server.db.GetSingleStation(id)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	start, end, err := server.db.CountStationJourney(id)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	sst := singleStationTemplate{
+		Station:   *theStation,
+		StartFrom: start,
+		EndingAt: end,
+	}
+
+	err = applyTemplate("server/singleview.html", w, sst)
 	if err != nil {
 		fmt.Println(err)
 	}

@@ -12,9 +12,9 @@
     <tbody>
 		{{ range $key, $value := .Journeys }}
 		 <tr>
-            <td><a href="{{ $value.DepartureID }}" >{{ $value.DepartureID }}</td>
+            <td><a href="/station/{{ $value.DepartureID }}" >{{ $value.DepartureID }}</td>
             <td>{{ $value.DepartureFI }} / {{ $value.DepartureSE }}</td>
-			<td><a href="{{ $value.ReturnID }}" >{{ $value.ReturnID }}</td>
+			<td><a href="/station/{{ $value.ReturnID }}" >{{ $value.ReturnID }}</td>
 			<td>{{ $value.ReturnFI }} / {{ $value.ReturnSE }}</td>
 			<td>{{ $value.Distance | FormatFloat }}</td>
 			<td>{{ $value.Duration | FormatFloat }}</td>

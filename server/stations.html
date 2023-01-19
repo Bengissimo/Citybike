@@ -11,7 +11,7 @@
     <tbody>
 		{{ range $key, $value := .Stations }}
 		 <tr>
-            <td><a href="{{ $value.ID }}" >{{ $value.ID }}</td>
+            <td><a href="/station/{{ $value.ID }}" >{{ $value.ID }}</td>
             <td>{{ $value.NameFI }}</td>
 			<td>{{ $value.NameSE }}</td>
 			<td>{{ $value.AddressFI }}</td>
