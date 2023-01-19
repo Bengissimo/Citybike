@@ -3,6 +3,7 @@ package citybike
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -59,7 +60,7 @@ func readJourneyCSV() ([]Journey, error) {
 		}
 		defer resp.Body.Close()
 
-		br, err := bomRemover(resp)
+		br, err := bomRemover(resp.Body)
 		if err != nil {
 			return nil, err
 		}
@@ -78,8 +79,8 @@ func readJourneyCSV() ([]Journey, error) {
 }
 
 // bomRemover remove any Byte Order Mark (BOM) that might be present at the beginning of the response body.
-func bomRemover(resp *http.Response) (*bufio.Reader, error) {
-	br := bufio.NewReader(resp.Body)
+func bomRemover(body io.ReadCloser) (*bufio.Reader, error) {
+	br := bufio.NewReader(body)
 	rune, _, err := br.ReadRune()
 	if err != nil {
 		return nil, err
@@ -163,7 +164,7 @@ func readStationCSV() ([]Station, error) {
 	}
 	defer resp.Body.Close()
 
-	br, err := bomRemover(resp)
+	br, err := bomRemover(resp.Body)
 	if err != nil {
 		return nil, err
 	}
