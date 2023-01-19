@@ -3,23 +3,29 @@ package citybike
 import "database/sql"
 
 var (
-	perPage        int    = 20
+	PerPage        int    = 20
 	selectStations string = `SELECT id, FI_Name, SE_Name, FI_Address, SE_Address
-	FROM StationList
-	LIMIT ? OFFSET ?`
+							FROM StationList
+							ORDER BY id
+							LIMIT ? OFFSET ?`
 	selectJourneys string = `SELECT 
-	Departure_ID,
-	Departure.FI_Name,
-	Departure.SE_Name,
-	Return_ID,
-	Return.FI_Name,
-	Return.SE_Name,
-	Distance,
-	Duration
-FROM JourneyList
-INNER JOIN StationList AS Departure ON JourneyList.Departure_ID = Departure.id
-INNER JOIN StationList AS Return ON JourneyList.Return_ID = Return.id
-LIMIT ? OFFSET ?`
+							Departure_ID,
+							Departure.FI_Name,
+							Departure.SE_Name,
+							Return_ID,
+							Return.FI_Name,
+							Return.SE_Name,
+							Distance,
+							Duration
+							FROM JourneyList
+							INNER JOIN StationList AS Departure ON JourneyList.Departure_ID = Departure.id
+							INNER JOIN StationList AS Return ON JourneyList.Return_ID = Return.id
+							LIMIT ? OFFSET ?`
+	countStations string = "SELECT count(*) FROM StationList"
+	countJourneys string = `SELECT count(*)
+							FROM JourneyList
+							INNER JOIN StationList AS Departure ON JourneyList.Departure_ID = Departure.id
+							INNER JOIN StationList AS Return ON JourneyList.Return_ID = Return.id`
 )
 
 func (citybike *Citybike) makeQuery(page int, perpage int, query string) (*sql.Rows, error) {
@@ -37,7 +43,7 @@ func (citybike *Citybike) makeQuery(page int, perpage int, query string) (*sql.R
 }
 
 func (citybike *Citybike) GetJourneyRows(pagenum int) ([]Journey, error) {
-	rows, err := citybike.makeQuery(pagenum, perPage, selectJourneys)
+	rows, err := citybike.makeQuery(pagenum, PerPage, selectJourneys)
 
 	if err != nil {
 		return nil, err
@@ -62,7 +68,7 @@ func (citybike *Citybike) GetJourneyRows(pagenum int) ([]Journey, error) {
 }
 
 func (citybike *Citybike) GetStationRows(pagenum int) ([]Station, error) {
-	rows, err := citybike.makeQuery(pagenum, perPage, selectStations)
+	rows, err := citybike.makeQuery(pagenum, PerPage, selectStations)
 	if err != nil {
 		return nil, err
 	}
@@ -80,4 +86,30 @@ func (citybike *Citybike) GetStationRows(pagenum int) ([]Station, error) {
 	}
 
 	return stations, nil
+}
+
+func (citybike *Citybike) CountStations() (int, error) {
+	rows, err := citybike.db.Query(countStations)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+
+	count := 0
+	rows.Next()
+	rows.Scan(&count)
+	return count, nil
+}
+
+func (citybike *Citybike) CountJourneys() (int, error) {
+	rows, err := citybike.db.Query(countJourneys)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+
+	count := 0
+	rows.Next()
+	rows.Scan(&count)
+	return count, nil
 }

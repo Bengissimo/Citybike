@@ -1,19 +1,17 @@
-
-
-<table>
-    <thead>
+<table style="width:100%">
+    <thead style="text-align:left" >
         <tr>
-            <th>ID</th>
-			<th>Nimi</th>
-			<th>Namn</th>
-			<th>Osoite</th>
-			<th>Adress</th>
+            <th> ID</th>
+			<th> Nimi</th>
+			<th> Namn</th>
+			<th> Osoite</th>
+			<th> Adress</th>
         </tr>
     </thead>
     <tbody>
 		{{ range $key, $value := .Stations }}
 		 <tr>
-            <td><a href="{{ $value.ID}}" >{{ $value.ID }}</td>
+            <td><a href="{{ $value.ID }}" >{{ $value.ID }}</td>
             <td>{{ $value.NameFI }}</td>
 			<td>{{ $value.NameSE }}</td>
 			<td>{{ $value.AddressFI }}</td>
@@ -22,3 +20,17 @@
 		{{ end }}
     </tbody>
 </table>
+
+<nav style="padding: 10px">
+	{{if gt .CurrentPage 0 }}
+		<a href="?p={{ .CurrentPage | MinusOne }}">Previous</a>
+	{{end}}
+		{{range $_, $value := .CurrentPage | PageRange}}
+			{{ if ge $.TotalPages $value}}
+				<a href="?p={{ $value }}" >{{ $value | PlusOne}}</a>
+			{{end}}
+		{{end}}
+	{{if gt .TotalPages .CurrentPage}}
+		<a href="?p={{ .CurrentPage | PlusOne}}">Next</a>
+	{{end}}
+</nav>

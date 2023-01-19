@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"html/template"
+	"math"
 	"net/http"
 	"strconv"
 
@@ -50,9 +51,18 @@ func (server *Server) stationHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 	}
 
-	st := stationTemplate{
-		Stations: stations,
+	count, err := server.db.CountStations()
+	if err != nil {
+		fmt.Println(err)
 	}
+	totalPages := math.Ceil(float64(count) / float64(citybike.PerPage))
+
+	st := stationTemplate{
+		Stations:    stations,
+		CurrentPage: pageNum,
+		TotalPages:  int(totalPages) - 1,
+	}
+
 	err = applyTemplate("server/stations.html", w, st)
 	if err != nil {
 		fmt.Println(err)
@@ -71,8 +81,16 @@ func (server *Server) journeyHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 	}
 
+	count, err := server.db.CountJourneys()
+	if err != nil {
+		fmt.Println(err)
+	}
+	totalPages := math.Ceil(float64(count) / float64(citybike.PerPage))
+
 	jt := journeyTemplate{
-		Journeys: journeys,
+		Journeys:    journeys,
+		CurrentPage: pageNum,
+		TotalPages:  int(totalPages) - 1,
 	}
 
 	err = applyTemplate("server/journeys.html", w, jt)

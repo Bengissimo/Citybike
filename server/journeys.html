@@ -1,11 +1,9 @@
-
-
-<table>
-    <thead>
+<table style="width:100%">
+    <thead style="text-align:left" >
         <tr>
-            <th>Departure Station ID</th>
+            <th>Departure ID</th>
 			<th>Departure Station</th>
-			<th>Return Station ID</th>
+			<th>Return ID</th>
 			<th>Return Station</th>
             <th>Distance</th>
 			<th>Duration</th>
@@ -14,9 +12,9 @@
     <tbody>
 		{{ range $key, $value := .Journeys }}
 		 <tr>
-            <td><a href="{{ $value.DepartureID}}" >{{ $value.DepartureID }}</td>
-            <td>{{ $value.DepartureFI}} / {{$value.DepartureSE}}</td>
-			<td>{{ $value.ReturnID }}</td>
+            <td><a href="{{ $value.DepartureID }}" >{{ $value.DepartureID }}</td>
+            <td>{{ $value.DepartureFI }} / {{ $value.DepartureSE }}</td>
+			<td><a href="{{ $value.ReturnID }}" >{{ $value.ReturnID }}</td>
 			<td>{{ $value.ReturnFI }} / {{ $value.ReturnSE }}</td>
 			<td>{{ $value.Distance | FormatFloat }}</td>
 			<td>{{ $value.Duration | FormatFloat }}</td>
@@ -24,3 +22,17 @@
 		{{ end }}
     </tbody>
 </table>
+
+<nav style="padding: 10px">
+	{{if gt .CurrentPage 0 }}
+		<a href="?p={{ .CurrentPage | MinusOne }}">Previous</a>
+	{{end}}
+		{{range $_, $value := .CurrentPage | PageRange}}
+			{{ if ge $.TotalPages $value}}
+				<a href="?p={{ $value }}" >{{ $value | PlusOne}}</a>
+			{{end}}
+		{{end}}
+	{{if gt .TotalPages .CurrentPage}}
+		<a href="?p={{ .CurrentPage | PlusOne}}">Next</a>
+	{{end}}
+</nav>
