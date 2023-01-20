@@ -107,12 +107,18 @@ func (server *Server) singleViewHandler(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		id = 0
 	}
+
 	theStation, err := server.db.GetSingleStation(id)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	start, end, err := server.db.CountStationJourney(id)
+	start, err := server.db.CountStationJourneys(id, citybike.JourneysStartFrom)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	end, err := server.db.CountStationJourneys(id, citybike.JourneysEndingAt)
 	if err != nil {
 		fmt.Println(err)
 	}
