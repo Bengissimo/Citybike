@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"math"
 	"net/http"
 	"strconv"
@@ -37,27 +38,46 @@ func (server *Server) Run() error {
 }
 
 func (server *Server) indexHandler(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles("server/index.html")
-	t.Execute(w, nil)
+	t, err := template.ParseFiles("server/index.html")
+	if err != nil {
+		http.Error(w, "Unable to render page", http.StatusInternalServerError)
+		return
+	}
+
+	err = t.Execute(w, nil)
+	if err != nil {
+		http.Error(w, "Unable to render page", http.StatusInternalServerError)
+		log.Println(err)
+	}
 }
 
 func (server *Server) stationHandler(w http.ResponseWriter, r *http.Request) {
 	page := r.URL.Query().Get("p")
 	pageNum, err := strconv.Atoi(page)
 	if err != nil {
-		pageNum = 0
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
 	}
 
 	stations, err := server.db.GetStationRows(pageNum)
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, "Unable to load station data", http.StatusInternalServerError)
+		log.Println(err)
+		return
 	}
 
 	count, err := server.db.CountStations()
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, "Unable to fetch count from database", http.StatusInternalServerError)
+		log.Println(err)
+		return
 	}
 	totalPages := math.Ceil(float64(count) / float64(citybike.PerPage))
+
+	if pageNum >= int(totalPages) {
+		http.Redirect(w, r, fmt.Sprintf("/journeys?p=%d", int(totalPages)-1), http.StatusTemporaryRedirect)
+		return
+	}
 
 	st := stationTemplate{
 		Stations:    stations,
@@ -67,27 +87,41 @@ func (server *Server) stationHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = applyTemplate("server/stations.html", w, st)
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, "Unable to render page", http.StatusInternalServerError)
+		log.Println(err)
 	}
 }
 
 func (server *Server) journeyHandler(w http.ResponseWriter, r *http.Request) {
 	page := r.URL.Query().Get("p")
-	pageNum, err := strconv.Atoi(page)
-	if err != nil {
-		pageNum = 0
+	pageNum := 0
+	var err error
+	if page != "" {
+		if pageNum, err = strconv.Atoi(page); err != nil {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
 	}
 
 	journeys, err := server.db.GetJourneyRows(pageNum)
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, "Unable to load journey data", http.StatusInternalServerError)
+		log.Println(err)
+		return
 	}
 
 	count, err := server.db.CountJourneys()
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, "Unable to fetch count from database", http.StatusInternalServerError)
+		log.Println(err)
+		return
 	}
 	totalPages := math.Ceil(float64(count) / float64(citybike.PerPage))
+
+	if pageNum >= int(totalPages) {
+		http.Redirect(w, r, fmt.Sprintf("/journeys?p=%d", int(totalPages)-1), http.StatusTemporaryRedirect)
+		return
+	}
 
 	jt := journeyTemplate{
 		Journeys:    journeys,
@@ -97,7 +131,8 @@ func (server *Server) journeyHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = applyTemplate("server/journeys.html", w, jt)
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, "Unable to render page", http.StatusInternalServerError)
+		log.Println(err)
 	}
 }
 
@@ -105,32 +140,35 @@ func (server *Server) singleViewHandler(w http.ResponseWriter, r *http.Request) 
 	idStr := strings.Split(r.URL.Path, "/")[2]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		id = 0
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
 	}
 
 	theStation, err := server.db.GetSingleStation(id)
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, "Not Found", http.StatusNotFound)
+		return
 	}
 
 	start, err := server.db.CountStationJourneys(id, citybike.JourneysStartFrom)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 
 	end, err := server.db.CountStationJourneys(id, citybike.JourneysEndingAt)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 
 	sst := singleStationTemplate{
 		Station:   *theStation,
 		StartFrom: start,
-		EndingAt: end,
+		EndingAt:  end,
 	}
 
 	err = applyTemplate("server/singleview.html", w, sst)
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, "Unable to render page", http.StatusInternalServerError)
+		log.Println(err)
 	}
 }
