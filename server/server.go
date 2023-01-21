@@ -53,10 +53,13 @@ func (server *Server) indexHandler(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) stationHandler(w http.ResponseWriter, r *http.Request) {
 	page := r.URL.Query().Get("p")
-	pageNum, err := strconv.Atoi(page)
-	if err != nil {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-		return
+	pageNum := 0
+	var err error
+	if page != "" {
+		if pageNum, err = strconv.Atoi(page); err != nil {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
 	}
 
 	stations, err := server.db.GetStationRows(pageNum)
@@ -75,7 +78,7 @@ func (server *Server) stationHandler(w http.ResponseWriter, r *http.Request) {
 	totalPages := math.Ceil(float64(count) / float64(citybike.PerPage))
 
 	if pageNum >= int(totalPages) {
-		http.Redirect(w, r, fmt.Sprintf("/journeys?p=%d", int(totalPages)-1), http.StatusTemporaryRedirect)
+		http.Redirect(w, r, fmt.Sprintf("/stations?p=%d", int(totalPages)-1), http.StatusTemporaryRedirect)
 		return
 	}
 

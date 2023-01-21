@@ -40,13 +40,13 @@ func applyTemplate(name string, w http.ResponseWriter, data any) error {
 			return value + 1
 		},
 		"PageRange": func(value int) []int {
-			a := []int{}
+			array := []int{}
 			for i := value - 5; i < value+5; i++ {
 				if i >= 0 {
-					a = append(a, i)
+					array = append(array, i)
 				}
 			}
-			return a
+			return array
 		},
 	}
 
