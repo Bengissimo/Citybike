@@ -2,6 +2,7 @@ package citybike
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
@@ -15,8 +16,9 @@ var (
 	minJourneyDuration time.Duration = 10 * time.Second
 	minDistance        float64       = 10
 	timeLayout         string        = "2006-01-02T15:04:05"
-	stationURL         string        = "https://opendata.arcgis.com/datasets/726277c507ef4914b0aec3cbcfcbfafc_0.csv"
-	journeyURLs                      = []string{
+	stationURLs                      = []string{
+		"https://opendata.arcgis.com/datasets/726277c507ef4914b0aec3cbcfcbfafc_0.csv"}
+	journeyURLs = []string{
 		"https://dev.hsl.fi/citybikes/od-trips-2021/2021-05.csv",
 		"https://dev.hsl.fi/citybikes/od-trips-2021/2021-06.csv",
 		"https://dev.hsl.fi/citybikes/od-trips-2021/2021-07.csv",
@@ -47,21 +49,19 @@ type Station struct {
 	AddressSE string `csv:"Adress"`
 }
 
-
 // readJourneyCSV reads csv files from specified URLs and returns a slice of Journey struct.
 // To load csv it uses csvtag package
 func readJourneyCSV() ([]Journey, error) {
 	journeyTab := []Journey{}
 
-	for _, url := range journeyURLs {
-		resp, err := http.Get(url)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
+	brs, err := getURL(journeyURLs)
+	if err != nil {
+		return nil, err
+	}
 
-		br, err := bomRemover(resp.Body)
-		if err != nil {
+	for _, br := range brs {
+
+		if err := bomRemover(br); err != nil {
 			return nil, err
 		}
 
@@ -78,19 +78,39 @@ func readJourneyCSV() ([]Journey, error) {
 	return validJourneyTab, nil
 }
 
-// bomRemover remove any Byte Order Mark (BOM) that might be present at the beginning of the response body.
-func bomRemover(body io.ReadCloser) (*bufio.Reader, error) {
-	br := bufio.NewReader(body)
+// getURL reads the response body and returns a slice of bufio.Reader pointers.
+func getURL(urls []string) ([]*bufio.Reader, error) {
+	brs := []*bufio.Reader{}
+
+	for _, url := range urls {
+		resp, err := http.Get(url)
+		if err != nil {
+			return nil, err
+		}
+		buf, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		resp.Body.Close()
+		br := bufio.NewReader(bytes.NewReader(buf))
+		brs = append(brs, br)
+	}
+
+	return brs, nil
+}
+
+// bomRemover removes any Byte Order Mark (BOM) that might be present at the beginning of the buffer.
+func bomRemover(br *bufio.Reader) (error) {
 	rune, _, err := br.ReadRune()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if rune != '\uFEFF' {
 		br.UnreadRune()
 	}
 
-	return br, nil
+	return nil
 }
 
 // validateJourney checks if the journey duration is valid.
@@ -153,24 +173,25 @@ func isDurationValid(dep string, ret string) (bool, error) {
 	return true, nil
 }
 
-// readStationCSV reads csv file from specified URL and returns a slice of Station struct.
+// readStationCSV reads csv file from specified URLs and returns a slice of Station struct.
 // To load csv it uses csvtag package.
 func readStationCSV() ([]Station, error) {
 	stationTab := []Station{}
 
-	resp, err := http.Get(stationURL)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	br, err := bomRemover(resp.Body)
+	brs, err := getURL(stationURLs)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = csvtag.LoadFromReader(br, &stationTab); err != nil {
-		return nil, err
+	for _, br := range brs {
+
+		if err := bomRemover(br); err != nil {
+			return nil, err
+		}
+
+		if err = csvtag.LoadFromReader(br, &stationTab); err != nil {
+			return nil, err
+		}
 	}
 
 	return stationTab, nil
