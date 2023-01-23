@@ -1,7 +1,8 @@
 package citybike
 
 import (
-	"io"
+	"bufio"
+	"bytes"
 	"reflect"
 	"strings"
 	"testing"
@@ -63,14 +64,20 @@ func TestBomRemover(t *testing.T) {
 		{"hello world", "hello world"},
 	}
 	for _, tc := range testCases {
-		result, err := bomRemover(io.NopCloser(strings.NewReader(tc.body)))
+		br := bufio.NewReader(strings.NewReader(tc.body))
+		err := bomRemover(br)
 		if err != nil {
 			t.Errorf("Error: %v", err)
 		}
-		res, _ := io.ReadAll(result)
-		exp := []byte(tc.expected)
-		if !reflect.DeepEqual(res, exp) {
-			t.Errorf("Error: expected %v but got %v", tc.expected, result)
+
+		buf := &bytes.Buffer{}
+		_, err = buf.ReadFrom(br)
+		if err != nil {
+			t.Errorf("Error: %v", err)
+		}
+
+		if !reflect.DeepEqual(buf.String(), tc.expected) {
+			t.Errorf("Error: expected %v but got %v", tc.expected, tc.body)
 		}
 	}
 }

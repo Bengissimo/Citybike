@@ -13,16 +13,16 @@ import (
 )
 
 var (
-	minJourneyDuration time.Duration = 10 * time.Second
-	minDistance        float64       = 10
-	timeLayout         string        = "2006-01-02T15:04:05"
-	stationURLs                      = []string{
+	stationURLs = []string{
 		"https://opendata.arcgis.com/datasets/726277c507ef4914b0aec3cbcfcbfafc_0.csv"}
 	journeyURLs = []string{
 		"https://dev.hsl.fi/citybikes/od-trips-2021/2021-05.csv",
 		"https://dev.hsl.fi/citybikes/od-trips-2021/2021-06.csv",
 		"https://dev.hsl.fi/citybikes/od-trips-2021/2021-07.csv",
 	}
+	minJourneyDuration time.Duration = 10 * time.Second
+	minDistance        float64       = 10
+	timeLayout         string        = "2006-01-02T15:04:05"
 )
 
 // Journey struct with csvtags
@@ -65,7 +65,7 @@ func readJourneyCSV() ([]Journey, error) {
 			return nil, err
 		}
 
-		if err = csvtag.LoadFromReader(br, &journeyTab); err != nil {
+		if err := csvtag.LoadFromReader(br, &journeyTab); err != nil {
 			return nil, err
 		}
 	}
@@ -100,7 +100,7 @@ func getURL(urls []string) ([]*bufio.Reader, error) {
 }
 
 // bomRemover removes any Byte Order Mark (BOM) that might be present at the beginning of the buffer.
-func bomRemover(br *bufio.Reader) (error) {
+func bomRemover(br *bufio.Reader) error {
 	rune, _, err := br.ReadRune()
 	if err != nil {
 		return err
@@ -137,6 +137,7 @@ func validateJourney(journeyTab []Journey) ([]Journey, error) {
 		journey.Duration /= 60   // convert to min
 		validJourneyTab = append(validJourneyTab, journey)
 	}
+
 	return validJourneyTab, nil
 }
 
