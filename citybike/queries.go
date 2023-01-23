@@ -24,7 +24,7 @@ var (
 							INNER JOIN StationList AS Departure ON JourneyList.Departure_ID = Departure.id
 							INNER JOIN StationList AS Return ON JourneyList.Return_ID = Return.id
 							LIMIT ? OFFSET ?`
-	selectSingle  string = "SELECT FI_Name, SE_Name, FI_Address, SE_Address FROM StationList WHERE id = ?"
+	selectSingle string = "SELECT FI_Name, SE_Name, FI_Address, SE_Address FROM StationList WHERE id = ?"
 )
 
 func (citybike *Citybike) makeQuery(page int, perpage int, query string) (*sql.Rows, error) {
@@ -104,7 +104,9 @@ func (citybike *Citybike) GetSingleStation(id int) (*Station, error) {
 		return nil, errors.New("Station not found")
 	}
 
-	theStation := &Station{}
+	theStation := &Station{
+		ID: id,
+	}
 	rows.Scan(
 		&theStation.NameFI,
 		&theStation.NameSE,
