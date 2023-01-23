@@ -153,12 +153,12 @@ func (server *Server) singleViewHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	start, err := server.db.CountStationJourneys(id, citybike.JourneysStartFrom)
+	start, err := server.db.CountStartingFrom(id)
 	if err != nil {
 		log.Println(err)
 	}
 
-	end, err := server.db.CountStationJourneys(id, citybike.JourneysEndingAt)
+	end, err := server.db.CountEndingAt(id)
 	if err != nil {
 		log.Println(err)
 	}
