@@ -20,7 +20,7 @@ func TestCitybike_GetJourneyRows(t *testing.T) {
 		"Distance", "Duration"}).
 		AddRow(1, "1_FIname", "1_SEname", 2, "2_FIname", "2_SEname", 2.0, 0.5)
 
-	mock.ExpectPrepare(regexp.QuoteMeta(selectJourneys)).
+	mock.ExpectPrepare(regexp.QuoteMeta(SelectJourneys)).
 		ExpectQuery().WithArgs(PerPage, 0).WillReturnRows(rows)
 
 	cb := &Citybike{
@@ -64,7 +64,7 @@ func TestCitybike_GetStationRows(t *testing.T) {
 		expStation.NameFI, expStation.NameSE,
 		expStation.AddressFI, expStation.AddressSE)
 
-	mock.ExpectPrepare(regexp.QuoteMeta(selectStations)).
+	mock.ExpectPrepare(regexp.QuoteMeta(SelectStations)).
 		ExpectQuery().WithArgs(PerPage, 0).WillReturnRows(rows)
 
 	cb := &Citybike{
@@ -98,11 +98,11 @@ func TestCitybike_GetSingleStation(t *testing.T) {
 		expStation.NameFI, expStation.NameSE,
 		expStation.AddressFI, expStation.AddressSE)
 
-	mock.ExpectPrepare(regexp.QuoteMeta(selectSingle)).
+	mock.ExpectPrepare(regexp.QuoteMeta(SelectSingle)).
 		ExpectQuery().WithArgs(expStation.ID).WillReturnRows(rows)
 
 	falseID := 1000
-	mock.ExpectPrepare(regexp.QuoteMeta(selectSingle)).
+	mock.ExpectPrepare(regexp.QuoteMeta(SelectSingle)).
 		ExpectQuery().WithArgs(falseID).WillReturnRows(sqlmock.NewRows([]string{}))
 
 	cb := &Citybike{

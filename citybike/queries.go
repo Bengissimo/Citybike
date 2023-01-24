@@ -7,11 +7,11 @@ import (
 
 var (
 	PerPage        int    = 20
-	selectStations string = `SELECT id, FI_Name, SE_Name, FI_Address, SE_Address
+	SelectStations string = `SELECT id, FI_Name, SE_Name, FI_Address, SE_Address
 							FROM StationList
 							ORDER BY id
 							LIMIT ? OFFSET ?`
-	selectJourneys string = `SELECT 
+	SelectJourneys string = `SELECT 
 							Departure_ID,
 							Departure.FI_Name,
 							Departure.SE_Name,
@@ -24,7 +24,7 @@ var (
 							INNER JOIN StationList AS Departure ON JourneyList.Departure_ID = Departure.id
 							INNER JOIN StationList AS Return ON JourneyList.Return_ID = Return.id
 							LIMIT ? OFFSET ?`
-	selectSingle string = "SELECT FI_Name, SE_Name, FI_Address, SE_Address FROM StationList WHERE id = ?"
+	SelectSingle string = "SELECT FI_Name, SE_Name, FI_Address, SE_Address FROM StationList WHERE id = ?"
 )
 
 func (citybike *Citybike) makeQuery(page int, perpage int, query string) (*sql.Rows, error) {
@@ -42,7 +42,7 @@ func (citybike *Citybike) makeQuery(page int, perpage int, query string) (*sql.R
 }
 
 func (citybike *Citybike) GetJourneyRows(pagenum int) ([]Journey, error) {
-	rows, err := citybike.makeQuery(pagenum, PerPage, selectJourneys)
+	rows, err := citybike.makeQuery(pagenum, PerPage, SelectJourneys)
 
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func (citybike *Citybike) GetJourneyRows(pagenum int) ([]Journey, error) {
 }
 
 func (citybike *Citybike) GetStationRows(pagenum int) ([]Station, error) {
-	rows, err := citybike.makeQuery(pagenum, PerPage, selectStations)
+	rows, err := citybike.makeQuery(pagenum, PerPage, SelectStations)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (citybike *Citybike) GetStationRows(pagenum int) ([]Station, error) {
 }
 
 func (citybike *Citybike) GetSingleStation(id int) (*Station, error) {
-	stmt, err := citybike.db.Prepare(selectSingle)
+	stmt, err := citybike.db.Prepare(SelectSingle)
 	if err != nil {
 		return nil, err
 	}
