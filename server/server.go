@@ -9,28 +9,43 @@ import (
 	"strconv"
 	"strings"
 
+	_ "embed"
+
 	"github.com/Bengissimo/Citybike/citybike"
 )
 
 type Server struct {
-	db *citybike.Citybike
+	cb *citybike.Citybike
+	mux *http.ServeMux
 }
+
+var (
+	//go:embed index.html
+	templateIndex string
+	//go:embed journeys.html
+	templateJourney string
+	//go:embed stations.html
+	templateStation string
+	//go:embed singleview.html
+	templateSingleView string
+)
 
 func New(cb *citybike.Citybike) *Server {
 	srv := &Server{
-		db: cb,
+		cb: cb,
+		mux : http.NewServeMux(),
 	}
 
-	http.HandleFunc("/", srv.indexHandler)
-	http.HandleFunc("/journeys", srv.journeyHandler)
-	http.HandleFunc("/stations", srv.stationHandler)
-	http.HandleFunc("/station/", srv.singleViewHandler)
+	srv.mux.HandleFunc("/", srv.indexHandler)
+	srv.mux.HandleFunc("/journeys", srv.journeyHandler)
+	srv.mux.HandleFunc("/stations", srv.stationHandler)
+	srv.mux.HandleFunc("/station/", srv.singleViewHandler)
 
 	return srv
 }
 
 func (server *Server) Run() error {
-	if err := http.ListenAndServe(":8000", nil); err != nil {
+	if err := http.ListenAndServe(":8000", server.mux); err != nil {
 		return err
 	}
 
@@ -38,9 +53,10 @@ func (server *Server) Run() error {
 }
 
 func (server *Server) indexHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("server/index.html")
+	t, err := template.New("index.html").Parse(templateIndex)
 	if err != nil {
 		http.Error(w, "Unable to render page", http.StatusInternalServerError)
+		log.Println(err)
 		return
 	}
 
@@ -62,14 +78,14 @@ func (server *Server) stationHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	stations, err := server.db.GetStationRows(pageNum)
+	stations, err := server.cb.GetStationRows(pageNum)
 	if err != nil {
 		http.Error(w, "Unable to load station data", http.StatusInternalServerError)
 		log.Println(err)
 		return
 	}
 
-	count, err := server.db.CountStations()
+	count, err := server.cb.CountStations()
 	if err != nil {
 		http.Error(w, "Unable to fetch count from database", http.StatusInternalServerError)
 		log.Println(err)
@@ -88,7 +104,7 @@ func (server *Server) stationHandler(w http.ResponseWriter, r *http.Request) {
 		TotalPages:  int(totalPages) - 1,
 	}
 
-	err = applyTemplate("server/stations.html", w, st)
+	err = applyTemplate(templateStation, w, st)
 	if err != nil {
 		http.Error(w, "Unable to render page", http.StatusInternalServerError)
 		log.Println(err)
@@ -106,14 +122,14 @@ func (server *Server) journeyHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	journeys, err := server.db.GetJourneyRows(pageNum)
+	journeys, err := server.cb.GetJourneyRows(pageNum)
 	if err != nil {
 		http.Error(w, "Unable to load journey data", http.StatusInternalServerError)
 		log.Println(err)
 		return
 	}
 
-	count, err := server.db.CountJourneys()
+	count, err := server.cb.CountJourneys()
 	if err != nil {
 		http.Error(w, "Unable to fetch count from database", http.StatusInternalServerError)
 		log.Println(err)
@@ -132,7 +148,7 @@ func (server *Server) journeyHandler(w http.ResponseWriter, r *http.Request) {
 		TotalPages:  int(totalPages) - 1,
 	}
 
-	err = applyTemplate("server/journeys.html", w, jt)
+	err = applyTemplate(templateJourney, w, jt)
 	if err != nil {
 		http.Error(w, "Unable to render page", http.StatusInternalServerError)
 		log.Println(err)
@@ -147,18 +163,18 @@ func (server *Server) singleViewHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	theStation, err := server.db.GetSingleStation(id)
+	theStation, err := server.cb.GetSingleStation(id)
 	if err != nil {
 		http.Error(w, "Not Found", http.StatusNotFound)
 		return
 	}
 
-	start, err := server.db.CountStartingFrom(id)
+	start, err := server.cb.CountStartingFrom(id)
 	if err != nil {
 		log.Println(err)
 	}
 
-	end, err := server.db.CountEndingAt(id)
+	end, err := server.cb.CountEndingAt(id)
 	if err != nil {
 		log.Println(err)
 	}
@@ -169,7 +185,7 @@ func (server *Server) singleViewHandler(w http.ResponseWriter, r *http.Request) 
 		EndingAt:  end,
 	}
 
-	err = applyTemplate("server/singleview.html", w, sst)
+	err = applyTemplate(templateSingleView, w, sst)
 	if err != nil {
 		http.Error(w, "Unable to render page", http.StatusInternalServerError)
 		log.Println(err)
