@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Bengissimo/Citybike/citybike"
-	"github.com/Bengissimo/Citybike/server"
+	"github.com/Bengissimo/Citybike/pkg/citybike"
+	"github.com/Bengissimo/Citybike/pkg/server"
 )
 
 func main() {

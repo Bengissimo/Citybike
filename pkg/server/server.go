@@ -11,7 +11,7 @@ import (
 
 	_ "embed"
 
-	"github.com/Bengissimo/Citybike/citybike"
+	"github.com/Bengissimo/Citybike/pkg/citybike"
 )
 
 type Server struct {

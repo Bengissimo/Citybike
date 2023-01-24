@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Bengissimo/Citybike/citybike"
+	"github.com/Bengissimo/Citybike/pkg/citybike"
 	"github.com/DATA-DOG/go-sqlmock"
 )
 

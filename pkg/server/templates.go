@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/Bengissimo/Citybike/citybike"
+	"github.com/Bengissimo/Citybike/pkg/citybike"
 )
 
 type stationTemplate struct {
