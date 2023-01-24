@@ -56,6 +56,15 @@ func New(path string) (*Citybike, error) {
 	return db, nil
 }
 
+// NewWithDb takes a sql.DB and returns a Citybike struct.
+// To use in the handler unit tests
+func NewWithDb(db *sql.DB) (*Citybike) {
+	cb := &Citybike{
+		db: db,
+	}
+	return cb
+}
+
 func (citybike *Citybike) Close() {
 	citybike.db.Close()
 }
