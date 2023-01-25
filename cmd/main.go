@@ -28,6 +28,7 @@ func main() {
 	}
 
 	s := server.New(db)
+	fmt.Println("Starting server")
 	if err := s.Run(); err != nil {
 		log.Fatal(err)
 	}
