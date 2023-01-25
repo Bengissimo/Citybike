@@ -1,18 +1,24 @@
 NAME=citybike
+DB=citybike.db
 
-all: build download run
+all: run
 
-build:
+${NAME}:
 	go build -o ${NAME} cmd/main.go
 
-download:
+${DB}:
 	./${NAME} -download
 
-run:
+download: ${DB}
+
+run: ${NAME} ${DB}
 	./${NAME}
 
-clean: 
+clean:
 	rm ${NAME}
+
+cleanall: 
+	rm ${NAME} ${DB}
 
 test:
 	go test ./... -v
@@ -20,7 +26,7 @@ test:
 docker_build:
 	docker build -t bengissimo/citybike .
 
-docker_run:
+docker_run: docker_build
 	docker run --rm -p 8000:8000 bengissimo/citybike
 
 docker: docker_build docker_run
