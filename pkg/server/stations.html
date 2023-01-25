@@ -2,20 +2,16 @@
     <thead style="text-align:left" >
         <tr>
             <th> ID</th>
-			<th> Nimi</th>
-			<th> Namn</th>
-			<th> Osoite</th>
-			<th> Adress</th>
+			<th> Name</th>
+			<th> Address</th>
         </tr>
     </thead>
     <tbody>
 		{{ range $key, $value := .Stations }}
 		 <tr>
             <td><a href="/station/{{ $value.ID }}" >{{ $value.ID }}</td>
-            <td>{{ $value.NameFI }}</td>
-			<td>{{ $value.NameSE }}</td>
-			<td>{{ $value.AddressFI }}</td>
-			<td>{{ $value.AddressSE }}</td>
+            <td>{{ $value.NameFI }} / {{ $value.NameSE }}</td>
+			<td>{{ $value.AddressFI }} / {{ $value.AddressSE }}</td>
         </tr>
 		{{ end }}
     </tbody>
