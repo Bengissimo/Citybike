@@ -60,7 +60,7 @@ func TestStationHandler(t *testing.T) {
 		"id",
 		"FI_Name", "SE_Name",
 		"FI_Address", "SE_Address",
-	}).AddRow(1, "finame", "sename", "fiaddress", "seaddress")
+	}).AddRow(1, "name", "sename", "fiaddress", "seaddress")
 	mock.ExpectPrepare(regexp.QuoteMeta(citybike.SelectStations)).
 		ExpectQuery().WithArgs(citybike.PerPage, 0).WillReturnRows(rows)
 
@@ -78,7 +78,7 @@ func TestStationHandler(t *testing.T) {
 			status, http.StatusOK)
 	}
 
-	expected := "Osoite"
+	expected := "fiaddress"
 	if !strings.Contains(rr.Body.String(), expected) {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), expected)
